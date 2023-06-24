@@ -1,94 +1,170 @@
 public class AVLTree<T extends Comparable<T>> {
-    NodeAvl<T> root;
+    Node<T> root;
 
-    int getHeight(NodeAvl<T> node) {
-        if (node == null)
-            return 0;
-        return node.height;
+    AVLTree() {
+        this.root = null;
     }
 
-    int max(int a, int b) {
-        return (a > b) ? a : b;
+    void insert(T data) {
+        root = insertNode(root, data);
     }
 
-    NodeAvl<T> createNode(T key) {
-        return new NodeAvl<>(key);
-    }
-
-    NodeAvl<T> rotateRight(NodeAvl<T> y) {
-        NodeAvl<T> x = y.left;
-        NodeAvl<T> T2 = x.right;
-
-        x.right = y;
-        y.left = T2;
-
-        y.height = max(getHeight(y.left), getHeight(y.right)) + 1;
-        x.height = max(getHeight(x.left), getHeight(x.right)) + 1;
-        y.balanceFactor = getHeight(y.left) - getHeight(y.right);
-        x.balanceFactor = getHeight(x.left) - getHeight(x.right);
-
-        return x;
-    }
-
-    NodeAvl<T> rotateLeft(NodeAvl<T> x) {
-        NodeAvl<T> y = x.right;
-        NodeAvl<T> T2 = y.left;
-
-        y.left = x;
-        x.right = T2;
-
-        x.height = max(getHeight(x.left), getHeight(x.right)) + 1;
-        y.height = max(getHeight(y.left), getHeight(y.right)) + 1;
-        x.balanceFactor = getHeight(x.left) - getHeight(x.right);
-        y.balanceFactor = getHeight(y.left) - getHeight(y.right);
-
-        return y;
-    }
-
-    int getBalance(NodeAvl<T> node) {
-        if (node == null)
-            return 0;
-        return node.balanceFactor;
-    }
-
-    NodeAvl<T> insertNode(NodeAvl<T> node, T key) {
-        if (node == null)
-            return createNode(key);
-
-        if (key.compareTo(node.key) < 0)
-            node.left = insertNode(node.left, key);
-        else if (key.compareTo(node.key) > 0)
-            node.right = insertNode(node.right, key);
-        else
-            return node;
-
-        node.height = 1 + max(getHeight(node.left), getHeight(node.right));
-        node.balanceFactor = getHeight(node.left) - getHeight(node.right);
-
-        if (node.balanceFactor > 1 && key.compareTo(node.left.key) < 0)
-            return rotateRight(node);
-
-        if (node.balanceFactor < -1 && key.compareTo(node.right.key) > 0)
-            return rotateLeft(node);
-
-        if (node.balanceFactor > 1 && key.compareTo(node.left.key) > 0) {
-            node.left = rotateLeft(node.left);
-            return rotateRight(node);
+    private Node<T> insertNode(Node<T> node, T data) {
+        if (node == null) {
+            return new Node<>(data);
         }
 
-        if (node.balanceFactor < -1 && key.compareTo(node.right.key) < 0) {
-            node.right = rotateRight(node.right);
-            return rotateLeft(node);
+        if (data.compareTo(node.data) < 0) {
+            node.leftNode = insertNode(node.leftNode, data);
+        } else if (data.compareTo(node.data) > 0) {
+            node.rightNode = insertNode(node.rightNode, data);
+        } else {
+            return node; // Duplicados no se permiten en AVL, no se realiza la inserción
+        }
+
+        node.balanceFactor = calculateBalanceFactor(node);
+
+        // Balanceo del árbol después de la inserción
+        if (node.balanceFactor < -1) {
+            if (data.compareTo(node.leftNode.data) < 0) {
+                return rotateRight(node);
+            } else {
+                node.leftNode = rotateLeft(node.leftNode);
+                return rotateRight(node);
+            }
+        }
+
+        if (node.balanceFactor > 1) {
+            if (data.compareTo(node.rightNode.data) > 0) {
+                return rotateLeft(node);
+            } else {
+                node.rightNode = rotateRight(node.rightNode);
+                return rotateLeft(node);
+            }
         }
 
         return node;
     }
 
-    void printInOrder(NodeAvl<T> node) {
+    void delete(T data) {
+        root = deleteNode(root, data);
+    }
+
+    private Node<T> deleteNode(Node<T> node, T data) {
+        if (node == null) {
+            return null;
+        }
+
+        if (data.compareTo(node.data) < 0) {
+            node.leftNode = deleteNode(node.leftNode, data);
+        } else if (data.compareTo(node.data) > 0) {
+            node.rightNode = deleteNode(node.rightNode, data);
+        } else {
+            if (node.leftNode == null || node.rightNode == null) {
+                node = (node.leftNode != null) ? node.leftNode : node.rightNode;
+            } else {
+                Node<T> successor = findMinimum(node.rightNode);
+                node.data = successor.data;
+                node.rightNode = deleteNode(node.rightNode, successor.data);
+            }
+        }
+
         if (node != null) {
-            printInOrder(node.left);
-            System.out.print(node.key + " ");
-            printInOrder(node.right);
+            node.balanceFactor = calculateBalanceFactor(node);
+
+            // Balanceo del árbol después de la eliminación
+            if (node.balanceFactor < -1) {
+                if (calculateBalanceFactor(node.leftNode) <= 0) {
+                    return rotateRight(node);
+                } else {
+                    node.leftNode = rotateLeft(node.leftNode);
+                    return rotateRight(node);
+                }
+            }
+
+            if (node.balanceFactor > 1) {
+                if (calculateBalanceFactor(node.rightNode) >= 0) {
+                    return rotateLeft(node);
+                } else {
+                    node.rightNode = rotateRight(node.rightNode);
+                    return rotateLeft(node);
+                }
+            }
+        }
+
+        return node;
+    }
+
+    private Node<T> findMinimum(Node<T> node) {
+        while (node.leftNode != null) {
+            node = node.leftNode;
+        }
+        return node;
+    }
+
+    private int calculateBalanceFactor(Node<T> node) {
+        return (node == null) ? 0 : height(node.rightNode) - height(node.leftNode);
+    }
+
+    private int height(Node<T> node) {
+        if (node == null) {
+            return -1;
+        }
+        return 1 + Math.max(height(node.leftNode), height(node.rightNode));
+    }
+
+    private Node<T> rotateRight(Node<T> node) {
+        Node<T> pivot = node.leftNode;
+        node.leftNode = pivot.rightNode;
+        pivot.rightNode = node;
+        node.balanceFactor = calculateBalanceFactor(node);
+        pivot.balanceFactor = calculateBalanceFactor(pivot);
+        return pivot;
+    }
+
+    private Node<T> rotateLeft(Node<T> node) {
+        Node<T> pivot = node.rightNode;
+        node.rightNode = pivot.leftNode;
+        pivot.leftNode = node;
+        node.balanceFactor = calculateBalanceFactor(node);
+        pivot.balanceFactor = calculateBalanceFactor(pivot);
+        return pivot;
+    }
+
+       void preorder() {
+        preorderTraversal(root);
+    }
+
+    private void preorderTraversal(Node<T> node) {
+        if (node != null) {
+            System.out.print(node.data + " ");
+            preorderTraversal(node.leftNode);
+            preorderTraversal(node.rightNode);
+        }
+    }
+
+    void inorder() {
+        inorderTraversal(root);
+    }
+
+    private void inorderTraversal(Node<T> node) {
+        if (node != null) {
+            inorderTraversal(node.leftNode);
+            System.out.print(node.data + " ");
+            inorderTraversal(node.rightNode);
+        }
+    }
+
+    void postorder() {
+        postorderTraversal(root);
+    }
+
+    private void postorderTraversal(Node<T> node) {
+        if (node != null) {
+            postorderTraversal(node.leftNode);
+            postorderTraversal(node.rightNode);
+            System.out.print(node.data + " ");
         }
     }
 }
+
