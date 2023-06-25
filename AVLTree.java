@@ -1,5 +1,5 @@
 public class AVLTree<T extends Comparable<T>> {
-    Node<T> root;
+    NodeAvl<T> root;
 
     AVLTree() {
         this.root = null;
@@ -9,15 +9,15 @@ public class AVLTree<T extends Comparable<T>> {
         root = insertNode(root, data);
     }
 
-    private Node<T> insertNode(Node<T> node, T data) {
+    private NodeAvl<T> insertNode(NodeAvl<T> node, T data) {
         if (node == null) {
-            return new Node<>(data);
+            return new NodeAvl<>(data);
         }
 
         if (data.compareTo(node.data) < 0) {
-            node.leftNode = insertNode(node.leftNode, data);
+            node.left = insertNode(node.left, data);
         } else if (data.compareTo(node.data) > 0) {
-            node.rightNode = insertNode(node.rightNode, data);
+            node.right = insertNode(node.right, data);
         } else {
             return node; // Duplicados no se permiten en AVL, no se realiza la inserción
         }
@@ -26,19 +26,19 @@ public class AVLTree<T extends Comparable<T>> {
 
         // Balanceo del árbol después de la inserción
         if (node.balanceFactor < -1) {
-            if (data.compareTo(node.leftNode.data) < 0) {
+            if (data.compareTo(node.left.data) < 0) {
                 return rotateRight(node);
             } else {
-                node.leftNode = rotateLeft(node.leftNode);
+                node.left = rotateLeft(node.left);
                 return rotateRight(node);
             }
         }
 
         if (node.balanceFactor > 1) {
-            if (data.compareTo(node.rightNode.data) > 0) {
+            if (data.compareTo(node.right.data) > 0) {
                 return rotateLeft(node);
             } else {
-                node.rightNode = rotateRight(node.rightNode);
+                node.right = rotateRight(node.right);
                 return rotateLeft(node);
             }
         }
@@ -50,22 +50,22 @@ public class AVLTree<T extends Comparable<T>> {
         root = deleteNode(root, data);
     }
 
-    private Node<T> deleteNode(Node<T> node, T data) {
+    private NodeAvl<T> deleteNode(NodeAvl<T> node, T data) {
         if (node == null) {
             return null;
         }
 
         if (data.compareTo(node.data) < 0) {
-            node.leftNode = deleteNode(node.leftNode, data);
+            node.left = deleteNode(node.left, data);
         } else if (data.compareTo(node.data) > 0) {
-            node.rightNode = deleteNode(node.rightNode, data);
+            node.right = deleteNode(node.right, data);
         } else {
-            if (node.leftNode == null || node.rightNode == null) {
-                node = (node.leftNode != null) ? node.leftNode : node.rightNode;
+            if (node.left == null || node.right == null) {
+                node = (node.left != null) ? node.left : node.right;
             } else {
-                Node<T> successor = findMinimum(node.rightNode);
+                NodeAvl<T> successor = findMinimum(node.right);
                 node.data = successor.data;
-                node.rightNode = deleteNode(node.rightNode, successor.data);
+                node.right = deleteNode(node.right, successor.data);
             }
         }
 
@@ -74,19 +74,19 @@ public class AVLTree<T extends Comparable<T>> {
 
             // Balanceo del árbol después de la eliminación
             if (node.balanceFactor < -1) {
-                if (calculateBalanceFactor(node.leftNode) <= 0) {
+                if (calculateBalanceFactor(node.left) <= 0) {
                     return rotateRight(node);
                 } else {
-                    node.leftNode = rotateLeft(node.leftNode);
+                    node.left = rotateLeft(node.left);
                     return rotateRight(node);
                 }
             }
 
             if (node.balanceFactor > 1) {
-                if (calculateBalanceFactor(node.rightNode) >= 0) {
+                if (calculateBalanceFactor(node.right) >= 0) {
                     return rotateLeft(node);
                 } else {
-                    node.rightNode = rotateRight(node.rightNode);
+                    node.right = rotateRight(node.right);
                     return rotateLeft(node);
                 }
             }
@@ -95,37 +95,37 @@ public class AVLTree<T extends Comparable<T>> {
         return node;
     }
 
-    private Node<T> findMinimum(Node<T> node) {
-        while (node.leftNode != null) {
-            node = node.leftNode;
+    private NodeAvl<T> findMinimum(NodeAvl<T> node) {
+        while (node.left != null) {
+            node = node.left;
         }
         return node;
     }
 
-    private int calculateBalanceFactor(Node<T> node) {
-        return (node == null) ? 0 : height(node.rightNode) - height(node.leftNode);
+    private int calculateBalanceFactor(NodeAvl<T> node) {
+        return (node == null) ? 0 : height(node.right) - height(node.left);
     }
 
-    private int height(Node<T> node) {
+    private int height(NodeAvl<T> node) {
         if (node == null) {
             return -1;
         }
-        return 1 + Math.max(height(node.leftNode), height(node.rightNode));
+        return 1 + Math.max(height(node.left), height(node.right));
     }
 
-    private Node<T> rotateRight(Node<T> node) {
-        Node<T> pivot = node.leftNode;
-        node.leftNode = pivot.rightNode;
-        pivot.rightNode = node;
+    private NodeAvl<T> rotateRight(NodeAvl<T> node) {
+        NodeAvl<T> pivot = node.left;
+        node.left = pivot.right;
+        pivot.right = node;
         node.balanceFactor = calculateBalanceFactor(node);
         pivot.balanceFactor = calculateBalanceFactor(pivot);
         return pivot;
     }
 
-    private Node<T> rotateLeft(Node<T> node) {
-        Node<T> pivot = node.rightNode;
-        node.rightNode = pivot.leftNode;
-        pivot.leftNode = node;
+    private NodeAvl<T> rotateLeft(NodeAvl<T> node) {
+        NodeAvl<T> pivot = node.right;
+        node.right = pivot.left;
+        pivot.left = node;
         node.balanceFactor = calculateBalanceFactor(node);
         pivot.balanceFactor = calculateBalanceFactor(pivot);
         return pivot;
@@ -135,11 +135,11 @@ public class AVLTree<T extends Comparable<T>> {
         preorderTraversal(root);
     }
 
-    private void preorderTraversal(Node<T> node) {
+    private void preorderTraversal(NodeAvl<T> node) {
         if (node != null) {
             System.out.print(node.data + " ");
-            preorderTraversal(node.leftNode);
-            preorderTraversal(node.rightNode);
+            preorderTraversal(node.left);
+            preorderTraversal(node.right);
         }
     }
 
@@ -147,11 +147,11 @@ public class AVLTree<T extends Comparable<T>> {
         inorderTraversal(root);
     }
 
-    private void inorderTraversal(Node<T> node) {
+    private void inorderTraversal(NodeAvl<T> node) {
         if (node != null) {
-            inorderTraversal(node.leftNode);
+            inorderTraversal(node.left);
             System.out.print(node.data + " ");
-            inorderTraversal(node.rightNode);
+            inorderTraversal(node.right);
         }
     }
 
@@ -159,10 +159,10 @@ public class AVLTree<T extends Comparable<T>> {
         postorderTraversal(root);
     }
 
-    private void postorderTraversal(Node<T> node) {
+    private void postorderTraversal(NodeAvl<T> node) {
         if (node != null) {
-            postorderTraversal(node.leftNode);
-            postorderTraversal(node.rightNode);
+            postorderTraversal(node.left);
+            postorderTraversal(node.right);
             System.out.print(node.data + " ");
         }
     }
