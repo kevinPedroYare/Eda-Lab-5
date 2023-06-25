@@ -2,12 +2,15 @@ public class Main {
     public static void main(String[] args) {
         AVLTree<Integer> tree = new AVLTree<>();
         tree.insert(10);
-        tree.insert(5);
-        tree.insert(15);
-        tree.insert(3);
-        tree.insert(8);
-        tree.insert(12);
         tree.insert(20);
+        tree.insert(30);
+        tree.insert(40);
+        tree.insert(50);
+        tree.insert(25);
+
+        AVLTreeVisualizer<Integer> visualizer = new AVLTreeVisualizer<>();
+
+        visualizer.visualizeTree(tree);
 
         System.out.print("Preorder: ");
         tree.preorder();
@@ -20,26 +23,5 @@ public class Main {
         System.out.print("Postorder: ");
         tree.postorder();
         System.out.println();
-
-	//GraphStreamTree<Integer> graphTree = new GraphStreamTree<>(tree);
-	//graphTree.visualizeTree();
     }
-
-    public GraphStream(){
-    
-	System.setProperty("org.graphstream.ui", "swing");
-
-	Graph graph = new SingleGraph("GraphStream");
-
-	Viewer viewer = graph.display();
-	viewer.disableAutoLayout();
-
-	graph.setAttribute("ui.stylesheet", styleSheet);
-	for(Node<T> node: tree){
-		graph.addNode(node.key.toString());
-		graph.getNode
-	}
-    }
-
 }
-
