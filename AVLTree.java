@@ -166,5 +166,68 @@ public class AVLTree<T extends Comparable<T>> {
             System.out.print(node.data + " ");
         }
     }
+
+    public T getMin() {
+        if (root == null) {
+            return null;
+        }
+
+        NodeAvl<T> current = root;
+        while (current.left != null) {
+            current = current.left;
+        }
+
+        return current.data;
+    }
+
+    public T getMax() {
+        if (root == null) {
+            return null;
+        }
+
+        NodeAvl<T> current = root;
+        while (current.right != null) {
+            current = current.right;
+        }
+
+        return current.data;
+    }
+
+    public NodeAvl<T> parent(NodeAvl<T> node) {
+        if (node == null || node == root) {
+            return null;
+        }
+
+        return findParent(root, node);
+    }
+
+    private NodeAvl<T> findParent(NodeAvl<T> current, NodeAvl<T> node) {
+        if (current == null) {
+            return null;
+        }
+
+        if ((current.left != null && current.left == node) || (current.right != null && current.right == node)) {
+            return current;
+        }
+
+        NodeAvl<T> parent = findParent(current.left, node);
+        if (parent == null) {
+            parent = findParent(current.right, node);
+        }
+
+        return parent;
+    }
+    
+    public NodeAvl<T> son(NodeAvl<T> parent, boolean isLeft) {
+        if (parent == null) {
+            return null;
+        }
+
+        if (isLeft) {
+            return parent.left;
+        } else {
+            return parent.right;
+        }
+    }
 }
 
